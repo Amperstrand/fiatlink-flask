@@ -17,6 +17,9 @@ from swagger_server.models.session_body import SessionBody  # noqa: E501
 from swagger_server.models.withdrawal_body import WithdrawalBody  # noqa: E501
 from swagger_server import util
 from flask import jsonify
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 
 
@@ -61,7 +64,9 @@ def order_post(body):  # noqa: E501
     """
     if connexion.request.is_json:
         body = OrderBody.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+        logging.info(f"Received order data: {body}")
+        return jsonify(body)
+    return 'Something went wrong'
 
 
 def order_status_post(body):  # noqa: E501
