@@ -1,0 +1,597 @@
+openapi: 3.0.0
+info:
+  title: Fiatlink FLS01
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/ALJAZ/fiatlink/1.0.0
+  description: SwaggerHub API Auto Mocking
+paths:
+  /features:
+    get:
+      summary: Get supported features
+      description: Endpoint to retrieve supported features
+      operationId: features_get
+      responses:
+        "200":
+          description: List of supported features
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /verify:
+    get:
+      summary: Provides token for authentication
+      description: Request a token to be signed by the reciever node as proof of ownership
+      operationId: verify_get
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /session:
+    post:
+      summary: Start a session
+      description: Start a session with optional signed proof of ownership. If Proof
+        of Ownership is not required signature can be a random alphanumeric value.
+      operationId: session_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/session_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /quote:
+    post:
+      summary: Get a quote or estimate
+      description: Get a an quote or estimate from the provider based on amount of
+        fiat you want to spend
+      operationId: quote_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/quote_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_3'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /order:
+    post:
+      summary: Create an order
+      description: Confirm an order from quote and get payment information in return
+      operationId: order_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/order_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_4'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /order-status:
+    post:
+      summary: Get order status
+      description: This endpoint returns the status of one or more orders based on
+        the session and order ID.
+      operationId: order_status_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/orderstatus_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/inline_response_map200'
+                x-content-type: application/json
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /withdrawal:
+    post:
+      summary: Initiate a withdrawal
+      description: Request lnurlw from the provider. User can provide optional fallback
+        onchain address which will be used if the withdrawal is not claimed before
+        the expiration date
+      operationId: withdrawal_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/withdrawal_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_5'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /payment-options:
+    post:
+      summary: Get payment options
+      description: "This endpoint provides a list of payment options for different\
+        \ currencies, filtered by an optional currency code."
+      operationId: payment_options_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/paymentoptions_body'
+        required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_6'
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+components:
+  schemas:
+    inline_response_200:
+      type: object
+      properties:
+        supported_features:
+          type: array
+          items:
+            type: object
+            properties:
+              quotes:
+                type: boolean
+                example: true
+              estimates:
+                type: boolean
+                example: true
+              on_chain_fallback:
+                type: boolean
+                example: false
+              webhook:
+                type: boolean
+                example: true
+            example:
+              on_chain_fallback: false
+              webhook: true
+              quotes: true
+              estimates: true
+      example:
+        supported_features:
+        - on_chain_fallback: false
+          webhook: true
+          quotes: true
+          estimates: true
+        - on_chain_fallback: false
+          webhook: true
+          quotes: true
+          estimates: true
+    inline_response_200_1:
+      required:
+      - expires_on
+      - session_id
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        token:
+          type: string
+          example: yyq6qpj2a
+        expires_on:
+          type: string
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+      example:
+        expires_on: 2023-09-20T00:25:11.123Z
+        session_id: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        token: yyq6qpj2a
+    session_body:
+      required:
+      - session_id
+      - signature
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        app_id:
+          type: string
+          description: serves as identifier of the application
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        signature:
+          type: string
+          description: "token signed with the node's private key, in zbase32 format"
+          example: rdfe8mi98o7am51jpocda1zp5d8scdu7rg65nn73fs6mb69t4byer9xned1hntkeq1pqdct9z5owx6bg58w5fmny6p5q783dce8ittjh
+        node_pubkey:
+          type: string
+          example: 0288037d3f0bdcfb240402b43b80cdc32e41528b3e2ebe05884aff507d71fca71a
+    inline_response_200_2:
+      required:
+      - expires_on
+      - session_id
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        app_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        expires_on:
+          type: string
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+      example:
+        expires_on: 2023-09-20T00:25:11.123Z
+        session_id: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        app_id: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+    quote_body:
+      type: object
+      oneOf:
+      - required:
+        - amount_fiat
+        - currency_id
+        - payment_option_id
+        - session_id
+        properties:
+          session_id:
+            type: string
+            format: uuid
+            example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+          amount_fiat:
+            type: integer
+            example: 100000
+          currency_id:
+            type: integer
+            example: 1
+          payment_option_id:
+            type: integer
+            example: 1
+      - required:
+        - amount_btc
+        - currency_id
+        - payment_option_id
+        - session_id
+        properties:
+          session_id:
+            type: string
+            format: uuid
+            example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+          amount_btc:
+            type: integer
+            example: 5000000
+          currency_id:
+            type: integer
+            example: 1
+          payment_option_id:
+            type: integer
+            example: 1
+    inline_response_200_3:
+      required:
+      - amount_fiat
+      - amount_sats
+      - btc_price
+      - currency_id
+      - is_estimate
+      - order_fee
+      - payment_option_id
+      type: object
+      properties:
+        quote_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        amount_fiat:
+          type: integer
+          example: 100000
+        currency_id:
+          type: integer
+          example: 1
+        payment_option_id:
+          type: integer
+          example: 1
+        amount_sats:
+          type: integer
+          example: 800000
+        is_estimate:
+          type: boolean
+          description: return true if estimate or false if quote
+          example: false
+          default: true
+        btc_price:
+          type: integer
+          example: 6942000
+        order_fee:
+          type: integer
+          example: 1234
+        expires_on:
+          type: string
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+      example:
+        amount_fiat: 100000
+        btc_price: 6942000
+        amount_sats: 800000
+        quote_id: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        expires_on: 2023-09-20T00:25:11.123Z
+        order_fee: 1234
+        payment_option_id: 1
+        is_estimate: false
+        currency_id: 1
+    order_body:
+      required:
+      - quote_id
+      - session_id
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        quote_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        webhook_url:
+          type: string
+          description: optional webhook for notifications
+          format: url
+          example: https://webhook.example.com/
+    inline_response_200_4:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        order_status:
+          type: string
+          example: placed
+        amount_fiat:
+          type: integer
+          example: 100000
+        currency_id:
+          type: integer
+          example: 1
+        payment_option_id:
+          type: integer
+          example: 1
+        amount_sats:
+          type: integer
+          example: 800000
+        expires_on:
+          type: string
+          description: by when the payment needs to arrive for the order to be honored
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+        payment_info:
+          type: object
+          additionalProperties: true
+      example:
+        order_status: placed
+        amount_fiat: 100000
+        amount_sats: 800000
+        expires_on: 2023-09-20T00:25:11.123Z
+        payment_info: ""
+        order_id: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        payment_option_id: 1
+        currency_id: 1
+    orderstatus_body:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        order_id:
+          required:
+          - session_id
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+    inline_response_map200:
+      type: object
+      properties:
+        amount_fiat:
+          type: integer
+          example: 100000
+        currency_id:
+          type: integer
+          example: 1
+        payment_option_id:
+          type: integer
+          example: 1
+        amount_sats:
+          type: integer
+          example: 800000
+        btc_price:
+          type: integer
+          example: 6942000
+        order_fee:
+          type: integer
+          example: 1234
+        order_status:
+          type: string
+          example: finished
+        order_status_date:
+          type: string
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+      example:
+        amount_fiat: 100000
+        order_status: finished
+        btc_price: 6942000
+        amount_sats: 800000
+        order_fee: 1234
+        order_status_date: 2023-09-20T00:25:11.123Z
+        payment_option_id: 1
+        currency_id: 1
+    withdrawal_body:
+      required:
+      - order_id
+      - session_id
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        order_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        failback_onchain:
+          type: string
+          format: uri
+          example: bc1qcmu7kcwrndyke09zzyl0wv3dqxwlzqkma248kj
+    inline_response_200_5:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: uuid
+          example: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+        withdrawal_expiration_date:
+          type: string
+          format: date-time
+          example: 2023-09-20T00:25:11.123Z
+        lnurlw:
+          type: string
+          format: uri
+          example: LNURL...
+      example:
+        withdrawal_expiration_date: 2023-09-20T00:25:11.123Z
+        lnurlw: LNURL...
+        order_id: 8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6
+    paymentoptions_body:
+      required:
+      - session_id
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          example: d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5
+        currency_code:
+          type: string
+          example: EUR
+    inline_response_200_6:
+      type: object
+      properties:
+        currencies:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                currency_id:
+                  type: integer
+                  example: 1
+                currency_code:
+                  type: string
+                  example: EUR
+                payment_options:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      option:
+                        type: string
+                        example: SEPA
+                      id:
+                        type: integer
+                        example: 1
+                      fee_rate:
+                        type: number
+                        format: double
+                        example: 0.005
+                      min_amount:
+                        type: integer
+                        example: 1000
+                      max_amount:
+                        type: integer
+                        example: 100000
+                    example:
+                      min_amount: 1000
+                      max_amount: 100000
+                      id: 1
+                      option: SEPA
+                      fee_rate: 0.005
+              example:
+                currency_id: 1
+                currency_code: EUR
+                payment_options:
+                - min_amount: 1000
+                  max_amount: 100000
+                  id: 1
+                  option: SEPA
+                  fee_rate: 0.005
+                - min_amount: 1000
+                  max_amount: 100000
+                  id: 1
+                  option: SEPA
+                  fee_rate: 0.005
+      example:
+        currencies:
+        - key:
+            currency_id: 1
+            currency_code: EUR
+            payment_options:
+            - min_amount: 1000
+              max_amount: 100000
+              id: 1
+              option: SEPA
+              fee_rate: 0.005
+            - min_amount: 1000
+              max_amount: 100000
+              id: 1
+              option: SEPA
+              fee_rate: 0.005
+        - key:
+            currency_id: 1
+            currency_code: EUR
+            payment_options:
+            - min_amount: 1000
+              max_amount: 100000
+              id: 1
+              option: SEPA
+              fee_rate: 0.005
+            - min_amount: 1000
+              max_amount: 100000
+              id: 1
+              option: SEPA
+              fee_rate: 0.005
+
