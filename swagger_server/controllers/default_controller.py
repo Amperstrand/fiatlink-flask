@@ -65,7 +65,21 @@ def order_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = OrderBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received order data: {body}")
-        return jsonify(body)
+
+
+        object_to_return = {
+            "amount_fiat": 100000,
+            "amount_sats": 800000,
+            "currency_id": 1,
+            "expires_on": "2023-09-20T00:25:11.123000+00:00",
+            "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+            "order_status": "placed",
+            "payment_info": "",
+            "payment_option_id": 1
+        }
+
+
+        return jsonify(object_to_return)
     return 'Something went wrong'
 
 
