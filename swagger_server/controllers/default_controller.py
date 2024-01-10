@@ -69,7 +69,6 @@ def order_post(body):  # noqa: E501
         logging.info(f"quote_id: {body.quote_id}")
         logging.info(f"session_id: {body.session_id}")
         logging.info(f"webhook_url: {body.webhook_url}")
-
         expires_on = datetime.utcnow() + timedelta(minutes=5)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
@@ -104,7 +103,6 @@ def order_status_post(body):  # noqa: E501
         logging.info(f"Received post data to /order-status data: {body}")
         logging.info(f"order_id: {body.order_id}")
         logging.info(f"session_id: {body.session_id}")
-
         object_to_return = {
             "additionalProp1": {
                 "amount_fiat": 100000,
@@ -265,14 +263,13 @@ def session_post(body):  # noqa: E501
         logging.info(f"node_pubkey: {body.node_pubkey}")
         logging.info(f"session_id: {body.session_id}")
         logging.info(f"signature: {body.signature}")
-
         expires_on = datetime.utcnow() + timedelta(minutes=60)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
         object_to_return = {
   "app_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
   "expires_on": expires_on_formatted,
-  "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
+  "session_id": body.session_id
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
@@ -292,7 +289,7 @@ def verify_get():  # noqa: E501
 
     object_to_return = {
   "expires_on": expires_on_formatted,
-  "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5",
+  "session_id": body.session_id
   "token": "yyq6qpj2a"
     }
     return jsonify(object_to_return)
@@ -314,7 +311,6 @@ def withdrawal_post(body):  # noqa: E501
         logging.info(f"failback_onchain: {body.failback_onchain}")
         logging.info(f"order_id: {body.order_id}")
         logging.info(f"session_id: {body.session_id}")
-
         expires_on = datetime.utcnow() + timedelta(minutes=30)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
