@@ -262,7 +262,12 @@ def verify_get():  # noqa: E501
 
     :rtype: InlineResponse2001
     """
-    return 'do some magic!'
+    object_to_return = {
+  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5",
+  "token": "yyq6qpj2a"
+    }
+    return jsonify(object_to_return)
 
 
 def withdrawal_post(body):  # noqa: E501
