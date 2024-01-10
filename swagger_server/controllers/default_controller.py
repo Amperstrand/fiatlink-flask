@@ -149,7 +149,55 @@ def payment_options_post(body):  # noqa: E501
         body = PaymentoptionsBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /payment-options data: {body}")
         object_to_return = {
-        }
+  "currencies": [
+    {
+      "key": {
+        "currency_code": "EUR",
+        "currency_id": 1,
+        "payment_options": [
+          {
+            "fee_rate": 0.005,
+            "id": 1,
+            "max_amount": 100000,
+            "min_amount": 1000,
+            "option": "SEPA"
+          },
+          {
+            "fee_rate": 0.005,
+            "id": 1,
+            "max_amount": 100000,
+            "min_amount": 1000,
+            "option": "SEPA"
+          }
+        ]
+      }
+    },
+    {
+      "key": {
+        "currency_code": "EUR",
+        "currency_id": 1,
+        "payment_options": [
+          {
+            "fee_rate": 0.005,
+            "id": 1,
+            "max_amount": 100000,
+            "min_amount": 1000,
+            "option": "SEPA"
+          },
+          {
+            "fee_rate": 0.005,
+            "id": 1,
+            "max_amount": 100000,
+            "min_amount": 1000,
+            "option": "SEPA"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+        
         return jsonify(object_to_return)
     return 'Something went wrong'
 
@@ -168,6 +216,15 @@ def quote_post(body):  # noqa: E501
         body = QuoteBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /quote data: {body}")
         object_to_return = {
+  "amount_fiat": 100000,
+  "amount_sats": 800000,
+  "btc_price": 6942000,
+  "currency_id": 1,
+  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "is_estimate": false,
+  "order_fee": 1234,
+  "payment_option_id": 1,
+  "quote_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6"
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
@@ -187,6 +244,11 @@ def session_post(body):  # noqa: E501
         body = SessionBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /session data: {body}")
         object_to_return = {
+{
+  "app_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
+}
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
@@ -217,6 +279,9 @@ def withdrawal_post(body):  # noqa: E501
         body = WithdrawalBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /withdrawal data: {body}")
         object_to_return = {
+  "lnurlw": "LNURL...",
+  "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "withdrawal_expiration_date": "2023-09-20T00:25:11.123000+00:00"
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
