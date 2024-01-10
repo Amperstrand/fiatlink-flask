@@ -72,17 +72,30 @@ def order_post(body):  # noqa: E501
         expires_on = datetime.utcnow() + timedelta(minutes=5)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
-        object_to_return = {
+        #todo: fetch quote from external source. hardcoded for now.
+        quote={
             "amount_fiat": 100000,
             "amount_sats": 800000,
+            "btc_price": 6942000,
             "currency_id": 1,
             "expires_on": expires_on_formatted,
+            "is_estimate": False,
+            "order_fee": 1234,
+            "payment_option_id": 1,
+            "quote_id": "9ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6"
+        }
+
+
+        object_to_return = {
+            "amount_fiat": quote['amount_fiat'],
+            "amount_sats": quote['amount_sats'],
+            "currency_id": quote['currency_id'],
+            "expires_on": quote['expires_on'],
             "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
             "order_status": "placed",
             "payment_info": "",
-            "payment_option_id": 1
+            "payment_option_id": quote['payment_option_id']
         }
-
 
         return jsonify(object_to_return)
     return 'Something went wrong'
@@ -287,10 +300,14 @@ def verify_get():  # noqa: E501
     expires_on = datetime.utcnow() + timedelta(minutes=60)
     expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
+    #todo: generate a session_id and token
+    session_id = "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
+    token = "yyq6qpj2a"
+
     object_to_return = {
   "expires_on": expires_on_formatted,
-  "session_id": body.session_id
-  "token": "yyq6qpj2a"
+  "session_id": session_id,
+  "token": token
     }
     return jsonify(object_to_return)
 
