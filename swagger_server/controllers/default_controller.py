@@ -225,11 +225,10 @@ def quote_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = QuoteBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /quote data: {body}")
-        logging.info(body)
-        #logging.info(body.amount_fiat)
-        #logging.info(f"currency_id: {body.currency_id}")
-        #logging.info(f"payment_option_id: {body.payment_option_id}")
-        #logging.info(f"session_id: {body.session_id}")
+        logging.info(f"amount_fiat: {body['amount_fiat']}")
+        logging.info(f"currency_id: {body['currency_id']}")
+        logging.info(f"payment_option_id: {body['payment_option_id']}")
+        logging.info(f"session_id: {body['session_id']}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=5)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
@@ -262,19 +261,18 @@ def session_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = SessionBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /session data: {body}")
-        #logging.info(f"app_id: {body.app_id}")
-        #logging.info(f"expires_on: {body.expires_on}")
-        #logging.info(f"session_id: {body.session_id}")
+        logging.info(f"app_id: {body.app_id}")
+        logging.info(f"node_pubkey: {body.node_pubkey}")
+        logging.info(f"session_id: {body.session_id}")
+        logging.info(f"signature: {body.signature}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=60)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
         object_to_return = {
-{
   "app_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
   "expires_on": expires_on_formatted,
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
-}
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
