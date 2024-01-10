@@ -66,6 +66,9 @@ def order_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = OrderBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /order data: {body}")
+        logging.info(f"quote_id: {body.quote_id}")
+        logging.info(f"session_id: {body.session_id}")
+        logging.info(f"webhook_url: {body.webhook_url}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=5)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
@@ -99,6 +102,8 @@ def order_status_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = OrderstatusBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /order-status data: {body}")
+        logging.info(f"order_id: {body.order_id}")
+        logging.info(f"session_id: {body.session_id}")
 
         object_to_return = {
             "additionalProp1": {
@@ -151,6 +156,8 @@ def payment_options_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = PaymentoptionsBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /payment-options data: {body}")
+        logging.info(f"currency_code: {body.currency_code}")
+        logging.info(f"session_id: {body.session_id}")
         object_to_return = {
   "currencies": [
     {
@@ -218,6 +225,11 @@ def quote_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = QuoteBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /quote data: {body}")
+        logging.info(body)
+        #logging.info(body.amount_fiat)
+        #logging.info(f"currency_id: {body.currency_id}")
+        #logging.info(f"payment_option_id: {body.payment_option_id}")
+        #logging.info(f"session_id: {body.session_id}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=5)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
@@ -228,7 +240,7 @@ def quote_post(body):  # noqa: E501
   "btc_price": 6942000,
   "currency_id": 1,
   "expires_on": expires_on_formatted,
-  "is_estimate": false,
+  "is_estimate": False,
   "order_fee": 1234,
   "payment_option_id": 1,
   "quote_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6"
@@ -250,6 +262,9 @@ def session_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = SessionBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /session data: {body}")
+        #logging.info(f"app_id: {body.app_id}")
+        #logging.info(f"expires_on: {body.expires_on}")
+        #logging.info(f"session_id: {body.session_id}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=60)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
@@ -298,6 +313,9 @@ def withdrawal_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = WithdrawalBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /withdrawal data: {body}")
+        logging.info(f"failback_onchain: {body.failback_onchain}")
+        logging.info(f"order_id: {body.order_id}")
+        logging.info(f"session_id: {body.session_id}")
 
         expires_on = datetime.utcnow() + timedelta(minutes=30)
         expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
