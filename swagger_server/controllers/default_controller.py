@@ -17,6 +17,7 @@ from swagger_server.models.session_body import SessionBody  # noqa: E501
 from swagger_server.models.withdrawal_body import WithdrawalBody  # noqa: E501
 from swagger_server import util
 from flask import jsonify
+from datetime import datetime, timedelta
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -66,12 +67,14 @@ def order_post(body):  # noqa: E501
         body = OrderBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /order data: {body}")
 
+        expires_on = datetime.utcnow() + timedelta(minutes=5)
+        expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
 
         object_to_return = {
             "amount_fiat": 100000,
             "amount_sats": 800000,
             "currency_id": 1,
-            "expires_on": "2023-09-20T00:25:11.123000+00:00",
+            "expires_on": expires_on_formatted,
             "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
             "order_status": "placed",
             "payment_info": "",
@@ -215,12 +218,16 @@ def quote_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = QuoteBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /quote data: {body}")
+
+        expires_on = datetime.utcnow() + timedelta(minutes=5)
+        expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
+
         object_to_return = {
   "amount_fiat": 100000,
   "amount_sats": 800000,
   "btc_price": 6942000,
   "currency_id": 1,
-  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "expires_on": expires_on_formatted,
   "is_estimate": false,
   "order_fee": 1234,
   "payment_option_id": 1,
@@ -243,10 +250,14 @@ def session_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = SessionBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /session data: {body}")
+
+        expires_on = datetime.utcnow() + timedelta(minutes=60)
+        expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
+
         object_to_return = {
 {
   "app_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
-  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "expires_on": expires_on_formatted,
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
 }
         }
@@ -262,8 +273,12 @@ def verify_get():  # noqa: E501
 
     :rtype: InlineResponse2001
     """
+
+    expires_on = datetime.utcnow() + timedelta(minutes=60)
+    expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
+
     object_to_return = {
-  "expires_on": "2023-09-20T00:25:11.123000+00:00",
+  "expires_on": expires_on_formatted,
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5",
   "token": "yyq6qpj2a"
     }
@@ -283,10 +298,14 @@ def withdrawal_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = WithdrawalBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /withdrawal data: {body}")
+
+        expires_on = datetime.utcnow() + timedelta(minutes=30)
+        expires_on_formatted = expires_on.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
+
         object_to_return = {
   "lnurlw": "LNURL...",
   "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
-  "withdrawal_expiration_date": "2023-09-20T00:25:11.123000+00:00"
+  "withdrawal_expiration_date": expires_on_formatted
         }
         return jsonify(object_to_return)
     return 'Something went wrong'
