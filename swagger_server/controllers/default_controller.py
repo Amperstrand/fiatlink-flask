@@ -16,6 +16,8 @@ from swagger_server.models.quote_body import QuoteBody  # noqa: E501
 from swagger_server.models.session_body import SessionBody  # noqa: E501
 from swagger_server.models.withdrawal_body import WithdrawalBody  # noqa: E501
 from swagger_server import util
+from flask import jsonify
+
 
 
 def features_get():  # noqa: E501
@@ -26,7 +28,25 @@ def features_get():  # noqa: E501
 
     :rtype: InlineResponse200
     """
-    return 'do some magic!'
+
+    object_to_return = {
+        "supported_features": [
+            {
+                "estimates": True,
+                "on_chain_fallback": False,
+                "quotes": True,
+                "webhook": True
+            },
+            {
+                "estimates": True,
+                "on_chain_fallback": False,
+                "quotes": True,
+                "webhook": True
+            }
+        ]
+    }
+
+    return jsonify (object_to_return)
 
 
 def order_post(body):  # noqa: E501
