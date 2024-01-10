@@ -64,7 +64,7 @@ def order_post(body):  # noqa: E501
     """
     if connexion.request.is_json:
         body = OrderBody.from_dict(connexion.request.get_json())  # noqa: E501
-        logging.info(f"Received order data: {body}")
+        logging.info(f"Received post data to /order data: {body}")
 
 
         object_to_return = {
@@ -95,7 +95,44 @@ def order_status_post(body):  # noqa: E501
     """
     if connexion.request.is_json:
         body = OrderstatusBody.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+        logging.info(f"Received post data to /order-status data: {body}")
+
+        object_to_return = {
+            "additionalProp1": {
+                "amount_fiat": 100000,
+                "amount_sats": 800000,
+                "btc_price": 6942000,
+                "currency_id": 1,
+                "order_fee": 1234,
+                "order_status": "finished",
+                "order_status_date": "2023-09-20T00:25:11.123000+00:00",
+                "payment_option_id": 1
+            },
+            "additionalProp2": {
+                "amount_fiat": 100000,
+                "amount_sats": 800000,
+                "btc_price": 6942000,
+                "currency_id": 1,
+                "order_fee": 1234,
+                "order_status": "finished",
+                "order_status_date": "2023-09-20T00:25:11.123000+00:00",
+                "payment_option_id": 1
+            },
+            "additionalProp3": {
+                "amount_fiat": 100000,
+                "amount_sats": 800000,
+                "btc_price": 6942000,
+                "currency_id": 1,
+                "order_fee": 1234,
+                "order_status": "finished",
+                "order_status_date": "2023-09-20T00:25:11.123000+00:00",
+                "payment_option_id": 1
+            }
+        }
+
+        return jsonify(object_to_return)
+
+    return 'Something went wrong'
 
 
 def payment_options_post(body):  # noqa: E501
