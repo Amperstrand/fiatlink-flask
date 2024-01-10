@@ -148,7 +148,10 @@ def payment_options_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = PaymentoptionsBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /payment-options data: {body}")
-    return 'do some magic!'
+        object_to_return = {
+        }
+        return jsonify(object_to_return)
+    return 'Something went wrong'
 
 
 def quote_post(body):  # noqa: E501
@@ -164,7 +167,10 @@ def quote_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = QuoteBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /quote data: {body}")
-    return 'do some magic!'
+        object_to_return = {
+        }
+        return jsonify(object_to_return)
+    return 'Something went wrong'
 
 
 def session_post(body):  # noqa: E501
@@ -180,7 +186,10 @@ def session_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = SessionBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /session data: {body}")
-    return 'do some magic!'
+        object_to_return = {
+        }
+        return jsonify(object_to_return)
+    return 'Something went wrong'
 
 
 def verify_get():  # noqa: E501
@@ -207,4 +216,7 @@ def withdrawal_post(body):  # noqa: E501
     if connexion.request.is_json:
         body = WithdrawalBody.from_dict(connexion.request.get_json())  # noqa: E501
         logging.info(f"Received post data to /withdrawal data: {body}")
-    return 'do some magic!'
+        object_to_return = {
+        }
+        return jsonify(object_to_return)
+    return 'Something went wrong'
