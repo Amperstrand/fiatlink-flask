@@ -1,19 +1,24 @@
+#!/bin/bash
+
+base_url=http://localhost:8080
+
+
 # get to /features
 
 curl -X 'GET' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/features' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/features" \
   -H 'accept: application/json'
 
 # get to /verify
 
 curl -X 'GET' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/verify' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/verify" \
   -H 'accept: application/json'
 
 # post to /session
 
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/session' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/session" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -26,7 +31,7 @@ curl -X 'POST' \
 
 # post to /payment-options
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/payment-options' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/payment-options" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -35,7 +40,7 @@ curl -X 'POST' \
 }'
 
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/payment-options' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/payment-options" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -44,7 +49,7 @@ curl -X 'POST' \
 }'
 
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/payment-options' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/payment-options" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -53,7 +58,7 @@ curl -X 'POST' \
 }'
 
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/payment-options' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/payment-options" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -62,8 +67,8 @@ curl -X 'POST' \
 
 # post to /quote
 
-curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/quote' \
+quote_response=$(curl -X 'POST' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/quote" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -71,51 +76,53 @@ curl -X 'POST' \
   "currency_id": 1,
   "payment_option_id": 1,
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
-}'
+}')
+echo $quote_response
+quote_id=$(echo $quote_response | jq -r .quote_id)
 
 sleep 1
 
 #post to /order
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/order' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/order" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "quote_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "quote_id": "'$quote_id'",
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5",
   "webhook_url": "https://webhook.example.com/"
 }'
 
 #post to /order-status
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/order-status' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/order-status" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "order_id": "'$quote_id'",
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
 }' | grep status
 
 #post to /order-status again after 15 seconds. order should be paid now
 sleep 15
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/order-status' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/order-status" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "order_id": "'$quote_id'",
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
 }' | grep status
 
 #post to /withdrawal
 
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/withdrawal' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/withdrawal" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "failback_onchain": "bc1qcmu7kcwrndyke09zzyl0wv3dqxwlzqkma248kj",
-  "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "order_id": "'$quote_id'",
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
 }'
 
@@ -123,10 +130,10 @@ curl -X 'POST' \
 #post to /order-status again after 15 seconds. order should be finished
 sleep 1
 curl -X 'POST' \
-  'http://localhost:8080/ALJAZ/fiatlink/1.0.0/order-status' \
+  "$base_url/ALJAZ/fiatlink/1.0.0/order-status" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "order_id": "8ed13c2a-a8c6-4f0e-b43e-3fdbf1f094a6",
+  "order_id": "'$quote_id'",
   "session_id": "d7ef9a88-1ca1-4ac8-bc9e-da3d9824cdc5"
 }' |grep status
