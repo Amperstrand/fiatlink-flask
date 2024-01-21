@@ -32,6 +32,9 @@ class Currency:
 class CurrencyManager:
     def __init__(self):
         self.currencies = {
+            "sbtc": Currency(0, "Signet BTC", [
+                PaymentOption(option="BTCPayserver checkout", id=0, fee_rate=0.0, min_amount=1000, max_amount=100000,)
+            ]),
             "eur": Currency(1, "EUR", [
                 PaymentOption(option="SEPA", id=1, fee_rate=0.005, min_amount=1, max_amount=100000),
                 PaymentOption(option="SEPA Instant", id=2, fee_rate=0.01, min_amount=1, max_amount=100000),
@@ -65,6 +68,9 @@ class CurrencyManager:
 class PaymentInfo:
     # Hardcoded payment options
     _payment_options = {
+        0: {
+            "payment_url": "empty default"
+        },
         1: {
             "payment_details": {
                 "provider_iban": "provider_iban string",

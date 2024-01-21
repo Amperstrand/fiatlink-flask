@@ -1,4 +1,5 @@
 #!/bin/bash
+delay=1
 set -e
 
 base_url=http://localhost:8080
@@ -58,7 +59,7 @@ echo $quote_response | jq -r .
 quote_id=$(echo $quote_response | jq -r .quote_id)
 echo quote_id $quote_id
 
-sleep 1
+sleep ${delay}
 
 #post to /order
 order_response=$(curl -sS -X 'POST' \
@@ -73,8 +74,33 @@ order_response=$(curl -sS -X 'POST' \
 echo $order_response | jq -r .
 echo $order_response | jq -r .order_status
 
-#post to /order-status after 11 seconds. order should be marked as paid now
-sleep 11
+
+#mark the order as settled
+
+api_key=215b9e349fa918023654d6982a68e05d26beb851
+store_id=6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui
+
+#invoice_id=$(python3 -c "import uuid; import base64; print(base64.urlsafe_b64encode(uuid.UUID('"${quote_id}"').bytes).decode('utf-8').rstrip('='))")
+invoice_id=$(python3 -c "import uuid; import base64; quote_id='"${quote_id}"'; print(base64.urlsafe_b64encode(uuid.UUID(quote_id).bytes).decode('utf-8').rstrip('='))")
+echo $invoice_id
+python3 -c "from swagger_server.controllers.invoice_helper import convert_id_to_uuid; id='"$invoice_id"'; uuid = convert_id_to_uuid(id); print(uuid)"
+ 
+
+echo invoice_id $invoice_id
+echo invoice_id $invoice_id
+
+
+curl  -X POST https://signet.demo.btcpayserver.org/api/v1/stores/${store_id}/invoices/${invoice_id}/status -H 'Authorization: token 7275e951ef1e37d36e612fa28963602546155fab' -H 'Content-Type: application/json' -d '{"status": "Settled"}'
+
+sleep 5
+exit
+
+
+# {"missingPermission":"btcpay.store.canmodifyinvoices","code":"missing-permission","message":"Insufficient API Permissions. Please use an API key with permission \"btcpay.store.canmodifyinvoices\". You can create an API key in your account's settings / Api Keys."}%                      
+
+
+#post to /order-status after a few seconds seconds. order should be marked as paid now
+sleep ${delay}
 order_status_response=$(curl -sS -X 'POST' \
   "$base_url/ALJAZ/fiatlink/1.0.0/order-status" \
   -H 'accept: application/json' \

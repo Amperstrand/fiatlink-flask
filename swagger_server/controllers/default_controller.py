@@ -21,11 +21,23 @@ from datetime import datetime, timedelta
 import logging
 logging.basicConfig(level=logging.INFO)
 import uuid
+import time
 
 #todo: move this to the right place
 from swagger_server.controllers.currency_manager import CurrencyManager 
 from swagger_server.controllers.currency_manager import PaymentInfo
 from swagger_server.controllers.currency_manager import PaymentOption
+
+#btcpayserver imports to create invoices and check payment status
+#from .invoice_helper import get_invoice_data
+from .invoice_helper import is_invoice_paid
+from .invoice_helper import create_invoice
+from .invoice_helper import create_invoice
+from .invoice_helper import convert_id_to_uuid
+from .invoice_helper import convert_uuid_to_orderId
+from .invoice_helper import find_invoiceId_that_starts_with
+from .invoice_helper import create_pull_payment
+
 
 currencies = CurrencyManager()
 all_currencies = currencies()  # Get all currencies
@@ -55,7 +67,7 @@ def create_random_quote_uuid():
     # Convert back to UUID
     return str(uuid.UUID(bytes=incremented_bytes))
 
-# Gobal data store to keep track of quotes. TODO: this should be a database
+# Gobal data store to keep track of quotes. TODO: this should be a datatttt
 quotes_data_store = {}
 
 # Global data store to keep track of orders TODO: this should be a database
@@ -135,6 +147,7 @@ def order_post(body):  # noqa: E501
 
         if quote.is_estimate:
             # todo: fetch the btc_price that we will actually use
+            #btc_price=6942000
             btc_price=6942000
             amount_fiat=1
             amount_sats=1
@@ -148,6 +161,20 @@ def order_post(body):  # noqa: E501
         #not used but also work:
         #credit_card_payment_info = PaymentInfo.get_payment_info(3).to_dict()
         #bank_transfer_payment_info = PaymentInfo.get_payment_info(5).to_dict()
+
+
+
+        #check with btcpayserver if the invoice has been paid
+        crypto_code='BTC'
+        api_key = "c813efc494886fe6469cb9b2433f5cc3388cb33d"
+        crypto_code = "BTC"
+        storeId="6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui"
+        #invoiceId = convert_uuid_to_orderId(body.order_id)
+        wrong_invoiceId = convert_uuid_to_orderId(body.quote_id)
+        invoiceId=find_invoiceId_that_starts_with(api_key, storeId, wrong_invoiceId[:-1])
+
+        payment_info=PaymentInfo.get_payment_info(quote.payment_option_id).to_dict()
+        payment_info['payment_url']=f"https://signet.demo.btcpayserver.org/i/{invoiceId}"
 
         order = InlineResponse2004(
             order_id=order_id,
@@ -166,7 +193,7 @@ def order_post(body):  # noqa: E501
             #payment_info={}
 
             #todo: consider changeing the type so that the to_dict() conversion is not needed
-            payment_info=PaymentInfo.get_payment_info(quote.payment_option_id).to_dict()
+            payment_info=payment_info
         )
 
         #create the order
@@ -230,8 +257,28 @@ def order_status_post(body):  # noqa: E501
             current_time = datetime.utcnow()
             placed_time = placed_data_store[body.order_id]
             total_seconds_difference = (current_time - placed_time).total_seconds()
+            #deprecated: mark orders as paid after 10 seconds
+            #if total_seconds_difference > 10:
 
-            if total_seconds_difference > 10:
+            #check with btcpayserver if the invoice has been paid
+            crypto_code='BTC'
+            api_key = "c813efc494886fe6469cb9b2433f5cc3388cb33d"
+            crypto_code = "BTC"
+            storeId="6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui"
+            #invoiceId = convert_uuid_to_orderId(body.order_id)
+            wrong_invoiceId = convert_uuid_to_orderId(body.order_id)
+            invoiceId=find_invoiceId_that_starts_with(api_key, storeId, wrong_invoiceId[:-1])
+
+
+            logging.error(body.order_id)
+            logging.error(body.order_id)
+            logging.error(body.order_id)
+            logging.error(body.order_id)
+            logging.error(invoiceId)
+            # paid = is_invoice_paid(invoice_data)
+            # print("Invoice is paid:", paid)
+
+            if (is_invoice_paid(api_key, crypto_code, storeId, invoiceId)):
                 logging.info ("The difference is more than 10 seconds. This means the order should be paid since all orders get paid when you check the status after 10 seconds.")
                 #todo: don't overwrite the timestamp
 
@@ -335,7 +382,10 @@ def quote_post(body):  # noqa: E501
         #logging.info(f"session_id: {body.session_id}")
 
         # $50000 = 1 BTC
-        btc_price=(50000*100) # in cents
+        #btc_price=(50000*100) # in cents
+        
+        # buy 1 Signet BTC for 2 Signet BTC
+        btc_price=(2*10000000)
         sat_price = btc_price / 100000000
 
         is_estimate = False
@@ -343,7 +393,7 @@ def quote_post(body):  # noqa: E501
         currency_id = body['currency_id']
         payment_option_id = body['payment_option_id']
         
-        quote_id = create_random_quote_uuid()
+
 
         if body.get('amount_btc') and not body.get('amount_fiat'):
             logging.info(f"amount_fiat: {body['amount_btc']}")
@@ -351,11 +401,13 @@ def quote_post(body):  # noqa: E501
             #todo: consider fees
             amount_sats=body['amount_btc']
             amount_fiat = amount_sats * sat_price # in cents
+            amount_for_btcpayserver=str(amount_btc / 10000000)
         elif body.get('amount_fiat') and not body.get('amount_btc'):
             #todo: consider fees
             amount_fiat=body['amount_fiat']
             amount_sats = amount_fiat / sat_price
             print(f"{body['session_id']} is asking for a quote to exchange {body['amount_fiat']} currency_id {body['currency_id']} and get BTC")
+            amount_for_btcpayserver=str(amount_fiat / 10000000)
         else:
             raise ValueError("Error: Either both or none of the values are present")
 
@@ -364,7 +416,8 @@ def quote_post(body):  # noqa: E501
         #todo: get currency by id instead of string code
         #1 is eur
         #2 is chf
-        currency_code='eur'
+        #currency_code='eur'
+        currency_code='sbtc'
         payment_options = currencies(currency_code)
 
         logging.info(f"payment_options for {currency_code}:")
@@ -378,6 +431,51 @@ def quote_post(body):  # noqa: E501
 #fix this
         payment_option=payment_options[currency_code] ['payment_options'][0]
         logging.info(payment_option)
+
+        #create an invoice with btcpayserver
+        # Example usage
+        #check with btcpayserver if the invoice has been paid
+        crypto_code='BTC'
+        api_key = "1699969fa207c2b97825cd5a54de792d8b0f1106"
+        crypto_code = "BTC"
+        storeId="6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui"
+        #invoiceId = "7qRS42Rwkni4dz8EdAmo8P"
+
+
+        currency = "BTC"  # Example currency
+        metadata = {
+            "orderId": "example_order_id",
+            "posData": "example_pos_data",
+            "itemDesc": "example_item_description",
+            "orderUrl": "example_order_url"
+        }
+        checkout = {
+            "speedPolicy": "LowSpeed",
+            "paymentMethods": ["BTC"],
+            "expirationMinutes": 15,
+            "monitoringMinutes": 1440,
+            "paymentTolerance": 0.0,
+            "redirectURL": "example_redirect_url",
+            "redirectAutomatically": True,
+            "requiresRefundEmail": True,
+            "defaultLanguage": "en"
+        }
+        order_response = create_invoice(api_key, storeId, amount_for_btcpayserver, currency, metadata, checkout)
+        logging.info(order_response)
+        #deprecated: don't use a random uuid, use the invoice id from btcpayserver
+        #quote_id = create_random_quote_uuid()
+        quote_id = convert_id_to_uuid(order_response['id'])
+
+
+
+
+
+
+
+
+
+
+
 
 
         #payment_option=(currencies.get_payment_option(currency_code, quote.payment_option))
@@ -512,6 +610,7 @@ def withdrawal_post(body):  # noqa: E501
         #Check order balance remaining to be paid out > 0
         previous_payouts_for_this_order = 0
         remaining_balance = order.amount_sats - previous_payouts_for_this_order
+        remaining_balance_in_bitcoin_as_decimal_str = f"{remaining_balance / 100000000:.8f}"
 
         if (remaining_balance <= 0):
             #todo: assert that order status is finished or somethings is very wrong
@@ -533,7 +632,50 @@ def withdrawal_post(body):  # noqa: E501
 
         #todo: generate a valid LNURLw
         logging.info(f"todo: generate a valid LNURLw for {remaining_balance}")
-        lnurlw=f"LNURL... which will let you withdraw {remaining_balance}"
+        lnurlw=f"LNURL... which will let you withdraw {remaining_balance} sats"
+        logging.info(lnurlw)
+
+        api_key="b7a5c578db8fe7819ebc531d2bf7171c1fd69a30"
+        storeId="6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui"
+
+
+
+        #check with btcpayserver if the invoice has been paid
+        crypto_code='BTC'
+        api_key = "1699969fa207c2b97825cd5a54de792d8b0f1106"
+        crypto_code = "BTC"
+        storeId="6WGmyJNq1AvQD9n5JZipn1wSt4Nh86wwUv6xYSzEdtui"
+        #invoiceId = convert_uuid_to_orderId(body.order_id)
+        wrong_invoiceId = convert_uuid_to_orderId(body.order_id)
+        invoiceId=find_invoiceId_that_starts_with(api_key, storeId, wrong_invoiceId[:-1])
+
+        #for creating pull payments
+        api_key = "b7a5c578db8fe7819ebc531d2bf7171c1fd69a30"
+
+        payment_info=PaymentInfo.get_payment_info(order.payment_option_id).to_dict()
+        
+            #f"This is a payout for the order for: order {body.order_id} session: {body.session_id} If it is not claimed, there is potentially a fallback to onchain payout to {body.failback_onchain} payment checkout: https://signet.demo.btcpayserver.org/i/{invoiceId} invoice payment details: https://laila.bitmynt.no/invoices/{invoiceId} ",
+           # f"Order {body.order_id}",
+
+        # Calling the create_pull_payment function
+        lnurlw = create_pull_payment(
+            api_key,
+            storeId,
+            f"max 30 characters bug?",
+            f"This is a payout for the order for:\n order {body.order_id}\n session: {body.session_id}\n\n If it is not claimed, there is potentially a failbak to onchain payout to {body.failback_onchain}\n\n payment checkout: https://signet.demo.btcpayserver.org/i/{invoiceId}\n\n invoice payment details: https://laila.bitmynt.no/invoices/{invoiceId} ",
+            f"{remaining_balance_in_bitcoin_as_decimal_str}",
+            "BTC",
+            604800,  # Period in seconds
+            30,       # BOLT11Expiration
+            True,    # autoApproveClaims
+            int(time.mktime(datetime.now().timetuple())),
+            int(time.mktime((datetime.now() + timedelta(days=8)).timetuple())),
+            ["BTC"]
+        )
+        logging.info(lnurlw)
+
+
+
 
         response = InlineResponse2005( order_id=body.order_id, lnurlw=lnurlw, withdrawal_expiration_date=withdrawal_expiration_date_formatted)
         return (response)
