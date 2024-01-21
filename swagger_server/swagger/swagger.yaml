@@ -275,10 +275,10 @@ components:
             example: 100000
           currency_id:
             type: integer
-            example: 1
+            example: 0
           payment_option_id:
             type: integer
-            example: 1
+            example: 0
       - required:
         - amount_btc
         - currency_id
