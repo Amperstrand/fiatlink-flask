@@ -2,7 +2,7 @@
 delay=1
 set -e
 
-base_url=http://localhost:8080
+base_url=http://45.85.249.170:8080
 
 # get to /features
 features_response=$(curl -sS -X 'GET' \
